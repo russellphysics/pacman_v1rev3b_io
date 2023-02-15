@@ -12,7 +12,53 @@ _root_chip_ids_=[11,41,71,101]
 _timeout_=0.01
 _connection_delay_=0.01
 
+def power_vddd(io):
+    io.set_reg(0x00024131, 40605, io_group=_io_group_)
+    io.set_reg(0x00024133, 40605, io_group=_io_group_)
+    io.set_reg(0x00024135, 40605, io_group=_io_group_)
+    io.set_reg(0x00024137, 40605, io_group=_io_group_)
+    io.set_reg(0x00024139, 40605, io_group=_io_group_)
+    io.set_reg(0x0002413b, 40605, io_group=_io_group_)
+    io.set_reg(0x0002413d, 40605, io_group=_io_group_)
+    io.set_reg(0x0002413f, 40605, io_group=_io_group_)
+    io.set_reg(0x101c, 4, io_group=_io_group_); time.sleep(1)
+    io.set_reg(0x10, 0b1000000001, io_group=_io_group_); time.sleep(1)
+    io.set_reg(0x10, 0b1000000011, io_group=_io_group_); time.sleep(1)
+    io.set_reg(0x10, 0b1000000111, io_group=_io_group_); time.sleep(1)
+    io.set_reg(0x10, 0b1000001111, io_group=_io_group_); time.sleep(1)
+    io.set_reg(0x10, 0b1000011111, io_group=_io_group_); time.sleep(1)
+    io.set_reg(0x10, 0b1000111111, io_group=_io_group_); time.sleep(1)
+    io.set_reg(0x10, 0b1001111111, io_group=_io_group_); time.sleep(1)
+    io.set_reg(0x10, 0b1011111111, io_group=_io_group_); time.sleep(1)
+    io.set_reg(0x2014, 0xffffffff, io_group=_io_group_)
+    io.set_reg(0x18, 0xffffffff, io_group=_io_group_)
 
+    
+def power_vdda(io):
+    io.set_reg(0x00024130, 46020, io_group=_io_group_); time.sleep(1)
+    io.set_reg(0x00024132, 46020, io_group=_io_group_); time.sleep(1)
+    io.set_reg(0x00024134, 46020, io_group=_io_group_); time.sleep(1)
+    io.set_reg(0x00024136, 46020, io_group=_io_group_); time.sleep(1)
+    io.set_reg(0x00024138, 46020, io_group=_io_group_); time.sleep(1)
+    io.set_reg(0x0002413a, 46020, io_group=_io_group_); time.sleep(1)
+    io.set_reg(0x0002413c, 46020, io_group=_io_group_); time.sleep(1)
+    io.set_reg(0x0002413e, 46020, io_group=_io_group_); time.sleep(1)
+
+
+# from reset_board_get_controller function in hydra_chain.py
+def hard_reset_set_transmit_speed(io, io_channels): 
+    io.reset_larpix(length=10240)
+    for tile in range(len(io_channels)):
+        for ioc in io_channels[tile]:
+            io.set_uart_clock_ratio(ioc, 10, io_group=_io_group_)
+
+            
+def module3_power_on(io, io_channels):
+    power_vddd(io)
+    power_vdda(io)
+    hard_reset_set_transmit_speed(io, io_channels)
+
+    
 def power_on_reset(c, io):
     io.set_reg(0x2014, 0xffffffff, io_group=_io_group_) # disable trigger forwarding
     io.set_reg(0x18, 0xffffffff, io_group=_io_group_) # enable pacman uart
@@ -26,9 +72,9 @@ def power_on_reset(c, io):
               0x00024138, 0x0002413a, 0x0002413c, 0x0002413e]
     vddd_reg=[0x00024131, 0x00024133, 0x00024135, 0x00024137, \
               0x00024139, 0x0002413b, 0x0002413d, 0x0002413f]
-    vdda_dac=0
+    vdda_dac=46020 #0
     for reg in vdda_reg: io.set_reg(reg, vdda_dac, io_group=_io_group_)
-    vddd_dac=40605
+    vddd_dac=37105 # 40605
     for reg in vddd_reg: io.set_reg(reg, vddd_dac, io_group=_io_group_)
     enable_val=[0b1000000001, 0b1000000011, 0b1000000111, 0b1000001111,
                 0b1000011111, 0b1000111111, 0b1001111111, 0b1011111111]
@@ -147,10 +193,15 @@ def main(single_chip=_default_single_chip, \
          **kwargs):
     c = larpix.Controller()
     c.io = larpix.io.PACMAN_IO(relaxed=True)
-    power_on_reset(c, c.io)
-    
     io_channels=pacman_io_channels()
+    
+    power_on_reset(c, c.io)
+
+    return ### TEST: REMOVE ME
+    
     set_transmit_clock(c.io, io_channels, 10)
+
+    #module3_power_on(c.io, io_channels) # ***test***
     
     ########## CONFIGURE HYDRA NETWORK ##########
     log_reconcile = enable_logger(c, reconcile=True)
