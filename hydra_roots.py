@@ -196,9 +196,6 @@ def main(single_chip=_default_single_chip, \
     io_channels=pacman_io_channels()
     
     power_on_reset(c, c.io)
-
-    return ### TEST: REMOVE ME
-    
     set_transmit_clock(c.io, io_channels, 10)
 
     #module3_power_on(c.io, io_channels) # ***test***
