@@ -74,7 +74,7 @@ def power_on_reset(c, io):
               0x00024139, 0x0002413b, 0x0002413d, 0x0002413f]
     vdda_dac=46020 #0
     for reg in vdda_reg: io.set_reg(reg, vdda_dac, io_group=_io_group_)
-    vddd_dac=37105 # 40605
+    vddd_dac=40605
     for reg in vddd_reg: io.set_reg(reg, vddd_dac, io_group=_io_group_)
     enable_val=[0b1000000001, 0b1000000011, 0b1000000111, 0b1000001111,
                 0b1000011111, 0b1000111111, 0b1001111111, 0b1011111111]
