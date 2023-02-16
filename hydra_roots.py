@@ -214,6 +214,7 @@ def main(single_chip=_default_single_chip, \
                 chip_key=setup_root_chip(c, _io_group_, i[0], i[1])
                 set_transmit_clock(c.io, [[chip_key.io_channel]] , 20)
                 ok = reconcile_software_to_asic(c, chip_key)
+                if not ok: c.remove_chip(chip_key)
     
     if verbose: print('{:.1f} seconds to setup root \
     chip and reconcile configuration'.format(time.time()-start_setup))
